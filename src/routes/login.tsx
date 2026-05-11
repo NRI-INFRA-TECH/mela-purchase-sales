@@ -19,9 +19,30 @@ function Login() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      setBusy(false);
+      return toast.error(error.message);
+    }
+
+    // Gate on profile.is_active — pending applicants cannot use the app
+    const uid = data.user?.id;
+    if (uid) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_active")
+        .eq("id", uid)
+        .maybeSingle();
+      if (!profile?.is_active) {
+        await supabase.auth.signOut();
+        setBusy(false);
+        toast.error("Your access request is still pending admin approval.");
+        navigate({ to: "/pending-approval" });
+        return;
+      }
+    }
+
     setBusy(false);
-    if (error) return toast.error(error.message);
     toast.success("Welcome back");
     navigate({ to: "/dashboard" });
   };
@@ -61,7 +82,7 @@ function Login() {
             </div>
           </form>
           <p className="mt-6 text-sm text-muted-foreground text-center">
-            New to the team? <Link to="/signup" className="text-primary font-medium hover:underline">Create an account</Link>
+            New to BazarMela? <Link to="/signup" className="text-primary font-medium hover:underline">Apply for access</Link>
           </p>
         </Card>
       </div>
