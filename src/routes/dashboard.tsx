@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/dashboard")({ component: DashboardLayout });
 
 function DashboardLayout() {
-  const { session, loading, isAdmin, fullName, signOut, teams } = useAuth();
+  const { session, loading, isAdmin, isExecSales, isExecPurchase, isElevated, fullName, signOut, teams } = useAuth();
   const navigate = useNavigate();
   const { location } = useRouterState();
 
@@ -21,11 +21,17 @@ function DashboardLayout() {
     return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Loading…</div>;
   }
 
+  const roleLabel = isAdmin
+    ? "Admin"
+    : isExecSales ? "Executive · Sales"
+    : isExecPurchase ? "Executive · Purchase"
+    : "Member";
+
   const nav: { to: string; label: string; icon: any; show: boolean }[] = [
     { to: "/dashboard", label: "Overview", icon: LayoutDashboard, show: true },
-    { to: "/dashboard/sales", label: "Sales / Customers", icon: Users, show: teams.includes("sales") || isAdmin },
-    { to: "/dashboard/purchase", label: "Purchase / Vendors", icon: Truck, show: teams.includes("purchase") || isAdmin },
-    { to: "/dashboard/admin", label: "Admin", icon: ShieldCheck, show: isAdmin },
+    { to: "/dashboard/sales", label: "Sales / Customers", icon: Users, show: teams.includes("sales") || isAdmin || isExecSales },
+    { to: "/dashboard/purchase", label: "Purchase / Vendors", icon: Truck, show: teams.includes("purchase") || isAdmin || isExecPurchase },
+    { to: "/dashboard/admin", label: "Admin", icon: ShieldCheck, show: isElevated },
   ];
 
   return (
@@ -59,7 +65,7 @@ function DashboardLayout() {
           <div className="px-3 py-2">
             <p className="text-xs text-muted-foreground">Signed in as</p>
             <p className="text-sm font-medium text-sidebar-foreground truncate">{fullName || session.user.email}</p>
-            <p className="text-xs text-muted-foreground capitalize">{isAdmin ? "Admin" : "Member"}</p>
+            <p className="text-xs text-muted-foreground">{roleLabel}</p>
           </div>
           <Button variant="ghost" size="sm" className="w-full justify-start" onClick={async () => { await signOut(); navigate({ to: "/login" }); }}>
             <LogOut className="h-4 w-4 mr-2" /> Sign out
