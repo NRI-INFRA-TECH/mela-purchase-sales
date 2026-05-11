@@ -72,6 +72,7 @@ function RequestsTable() {
       const { data, error } = await supabase
         .from("access_requests")
         .select("*")
+        .eq("status", "pending")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -109,7 +110,7 @@ function RequestsTable() {
         <TableBody>
           {rows.map((r: any) => {
             const role = r.requested_executive
-              ? (r.requested_team === "sales" ? "Executive — Sales" : "Executive — Purchase")
+              ? (r.requested_team === "sales" ? "Manager — Sales" : "Manager — Purchase")
               : (r.requested_team === "sales" ? "Sales Team" : "Purchase Team");
             return (
               <TableRow key={r.id}>
@@ -216,8 +217,8 @@ function UsersTable({ addOpen, setAddOpen }: { addOpen: boolean; setAddOpen: (v:
               <TableHead>Email</TableHead>
               <TableHead>Sales</TableHead>
               <TableHead>Purchase</TableHead>
-              {isAdmin && <TableHead>Exec Sales</TableHead>}
-              {isAdmin && <TableHead>Exec Purchase</TableHead>}
+              {isAdmin && <TableHead>Mgr Sales</TableHead>}
+              {isAdmin && <TableHead>Mgr Purchase</TableHead>}
               {isAdmin && <TableHead>Admin</TableHead>}
               {isAdmin && <TableHead>Active</TableHead>}
               <TableHead>Joined</TableHead>

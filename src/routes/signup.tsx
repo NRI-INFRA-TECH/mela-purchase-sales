@@ -16,8 +16,8 @@ type RequestRole = "sales" | "purchase" | "executive_sales" | "executive_purchas
 const ROLE_OPTIONS: { value: RequestRole; label: string; desc: string }[] = [
   { value: "sales", label: "Sales Team", desc: "Onboard customers and track leads" },
   { value: "purchase", label: "Purchase Team", desc: "Onboard vendors and track sourcing" },
-  { value: "executive_sales", label: "Executive — Sales", desc: "Oversee the entire Sales team" },
-  { value: "executive_purchase", label: "Executive — Purchase", desc: "Oversee the entire Purchase team" },
+  { value: "executive_sales", label: "Manager — Sales", desc: "Oversee the entire Sales team" },
+  { value: "executive_purchase", label: "Manager — Purchase", desc: "Oversee the entire Purchase team" },
 ];
 
 function Signup() {
