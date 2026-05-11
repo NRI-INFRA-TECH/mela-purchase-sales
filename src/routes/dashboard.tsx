@@ -2,7 +2,8 @@ import { Link, Outlet, createFileRoute, useNavigate, useRouterState } from "@tan
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, Truck, ShieldCheck, LogOut, Store } from "lucide-react";
+import { LayoutDashboard, Users, Truck, ShieldCheck, LogOut } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard")({ component: DashboardLayout });
@@ -30,8 +31,8 @@ function DashboardLayout() {
   return (
     <div className="min-h-screen flex bg-secondary/30">
       <aside className="w-64 bg-sidebar border-r border-sidebar-border flex flex-col shrink-0 hidden md:flex">
-        <div className="p-5 flex items-center gap-2 font-display font-bold text-xl text-sidebar-foreground border-b border-sidebar-border">
-          <Store className="h-6 w-6 text-primary" /> BazarMela
+        <div className="p-5 border-b border-sidebar-border">
+          <BrandLogo size="md" />
         </div>
         <nav className="flex-1 p-3 space-y-1">
           {nav.filter(n => n.show).map(n => {
@@ -68,7 +69,7 @@ function DashboardLayout() {
 
       {/* Mobile top bar */}
       <div className="md:hidden fixed top-0 inset-x-0 bg-sidebar border-b border-sidebar-border z-40 flex items-center justify-between px-4 h-14">
-        <div className="flex items-center gap-2 font-display font-bold"><Store className="h-5 w-5 text-primary" /> BazarMela</div>
+        <BrandLogo size="sm" />
         <Button size="sm" variant="ghost" onClick={async () => { await signOut(); navigate({ to: "/login" }); }}><LogOut className="h-4 w-4" /></Button>
       </div>
 
