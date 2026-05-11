@@ -48,8 +48,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "BazarMela — Team Dashboard" },
+      { title: "BazarMela — Purchase_Sales Team Dashboard" },
       { name: "description", content: "Internal Sales & Purchase team dashboard for BazarMela." },
+      { property: "og:title", content: "BazarMela — Purchase_Sales Team Dashboard" },
+      { name: "twitter:title", content: "BazarMela — Purchase_Sales Team Dashboard" },
+      { property: "og:description", content: "Internal Sales & Purchase team dashboard for BazarMela." },
+      { name: "twitter:description", content: "Internal Sales & Purchase team dashboard for BazarMela." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/8051cd6c-ca7b-43d3-bfbb-4b85f6a99425" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/8051cd6c-ca7b-43d3-bfbb-4b85f6a99425" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:type", content: "website" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
