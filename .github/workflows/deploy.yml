@@ -12,6 +12,7 @@ jobs:
   build:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
+    environment: hostinger
     permissions:
       contents: read
       packages: write
