@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Card } from "@/components/ui/card";
-import { Users, Truck, CheckCircle2, Clock, XCircle } from "lucide-react";
+import { Users, Truck, CheckCircle2, Clock } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
 import { format } from "date-fns";
 
@@ -116,5 +116,3 @@ function Row({ label, count, total, color }: { label: string; count: number; tot
   );
 }
 
-// XCircle import workaround
-void XCircle;

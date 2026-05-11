@@ -6,10 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { StatusBadge } from "@/components/StatusBadge";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
@@ -110,8 +107,6 @@ function UsersTable() {
           ))}
         </TableBody>
       </Table>
-      {/* unused import safety */}
-      <div className="hidden"><Badge /><Button /><StatusBadge status="accepted" /></div>
     </Card>
   );
 }
