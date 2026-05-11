@@ -159,7 +159,7 @@ function UsersTable({ addOpen, setAddOpen }: { addOpen: boolean; setAddOpen: (v:
     queryKey: ["admin-users"],
     queryFn: async () => {
       const [p, r, t] = await Promise.all([
-        supabase.from("profiles").select("*").order("created_at"),
+        supabase.from("profiles").select("*").eq("is_active", true).order("created_at"),
         supabase.from("user_roles").select("*"),
         supabase.from("user_teams").select("*"),
       ]);

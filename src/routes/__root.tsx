@@ -7,8 +7,10 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 
 import appCss from "../styles.css?url";
 
@@ -99,6 +101,24 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    const origFetch = window.fetch.bind(window);
+    window.fetch = async (input: RequestInfo | URL, init: RequestInit = {}) => {
+      const url = typeof input === "string" ? input : input instanceof URL ? input.href : (input as Request).url;
+      if (url.includes("/_serverFn/")) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          const headers = new Headers(init.headers as HeadersInit);
+          headers.set("Authorization", `Bearer ${session.access_token}`);
+          init = { ...init, headers };
+        }
+      }
+      return origFetch(input, init);
+    };
+    return () => { window.fetch = origFetch; };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
