@@ -56,6 +56,9 @@ function Login() {
             <Button type="submit" disabled={busy} className="w-full">
               {busy ? "Signing in…" : "Sign in"}
             </Button>
+            <div className="text-right">
+              <Link to="/forgot-password" className="text-xs text-muted-foreground hover:text-primary hover:underline">Forgot password?</Link>
+            </div>
           </form>
           <p className="mt-6 text-sm text-muted-foreground text-center">
             New to the team? <Link to="/signup" className="text-primary font-medium hover:underline">Create an account</Link>

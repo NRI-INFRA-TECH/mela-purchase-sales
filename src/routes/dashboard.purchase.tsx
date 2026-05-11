@@ -10,9 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/StatusBadge";
 import { VendorForm, type VendorRow } from "@/components/VendorForm";
 import { FilterBar, applyFilters, emptyFilters, type Filters } from "@/components/FilterBar";
-import { Plus, Pencil, Download } from "lucide-react";
+import { Plus, Pencil, Download, FileSpreadsheet } from "lucide-react";
 import { format } from "date-fns";
 import { downloadCsv } from "@/lib/csv";
+import { downloadXlsx } from "@/lib/xlsx";
 
 export const Route = createFileRoute("/dashboard/purchase")({ component: PurchasePage });
 
@@ -39,13 +40,15 @@ function PurchasePage() {
 
   const filtered = applyFilters(data ?? [], filters, (r: any) => `${r.vendor_name} ${r.phone} ${r.location} ${(r.product_categories ?? []).join(" ")}`);
 
-  const exportCsv = () => downloadCsv(`vendors-${new Date().toISOString().slice(0,10)}.csv`,
-    filtered.map((r: any) => ({
-      Vendor: r.vendor_name, Categories: (r.product_categories ?? []).join("; "), Phone: r.phone,
-      Email: r.email ?? "", Website: r.website ?? "", Location: r.location, MOQ: r.moq ?? "",
-      PriceRange: r.price_range ?? "", Supply: r.supply_capacity ?? "", Delivery: r.delivery_capacity ?? "",
-      Status: r.status, FollowUp: r.follow_up_date ?? "", AddedBy: memberMap[r.created_by] ?? "", AddedOn: r.created_at,
-    })));
+  const exportRows = () => filtered.map((r: any) => ({
+    Vendor: r.vendor_name, Categories: (r.product_categories ?? []).join("; "), Phone: r.phone,
+    Email: r.email ?? "", Website: r.website ?? "", Location: r.location, MOQ: r.moq ?? "",
+    PriceRange: r.price_range ?? "", Supply: r.supply_capacity ?? "", Delivery: r.delivery_capacity ?? "",
+    Status: r.status, FollowUp: r.follow_up_date ?? "", AddedBy: memberMap[r.created_by] ?? "", AddedOn: r.created_at,
+  }));
+  const stamp = new Date().toISOString().slice(0,10);
+  const exportCsv = () => downloadCsv(`vendors-${stamp}.csv`, exportRows());
+  const exportXlsx = () => downloadXlsx(`vendors-${stamp}.xlsx`, exportRows(), "Vendors");
 
   return (
     <div className="space-y-6">
@@ -55,7 +58,8 @@ function PurchasePage() {
           <p className="text-muted-foreground">{isAdmin ? "All vendor records across the team." : "Your vendor records."}</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={exportCsv} disabled={!filtered.length}><Download className="h-4 w-4 mr-2" />Export</Button>
+          <Button variant="outline" onClick={exportCsv} disabled={!filtered.length}><Download className="h-4 w-4 mr-2" />CSV</Button>
+          <Button variant="outline" onClick={exportXlsx} disabled={!filtered.length}><FileSpreadsheet className="h-4 w-4 mr-2" />Excel</Button>
           <Button onClick={() => { setEditing(null); setOpen(true); }}><Plus className="h-4 w-4 mr-2" />New vendor</Button>
         </div>
       </div>

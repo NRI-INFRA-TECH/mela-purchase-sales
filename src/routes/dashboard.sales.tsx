@@ -9,9 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { StatusBadge } from "@/components/StatusBadge";
 import { SalesForm, type SalesRow } from "@/components/SalesForm";
 import { FilterBar, applyFilters, emptyFilters, type Filters } from "@/components/FilterBar";
-import { Plus, Pencil, Download } from "lucide-react";
+import { Plus, Pencil, Download, FileSpreadsheet } from "lucide-react";
 import { format } from "date-fns";
 import { downloadCsv } from "@/lib/csv";
+import { downloadXlsx } from "@/lib/xlsx";
 
 export const Route = createFileRoute("/dashboard/sales")({ component: SalesPage });
 
@@ -40,12 +41,14 @@ function SalesPage() {
 
   const filtered = applyFilters(data ?? [], filters, (r: any) => `${r.customer_name} ${r.phone} ${r.location} ${r.email ?? ""}`);
 
-  const exportCsv = () => downloadCsv(`sales-${new Date().toISOString().slice(0,10)}.csv`,
-    filtered.map((r: any) => ({
-      Customer: r.customer_name, Phone: r.phone, Email: r.email ?? "", Website: r.website ?? "",
-      Location: r.location, Status: r.status, FollowUp: r.follow_up_date ?? "",
-      Remarks: r.remarks ?? "", AddedBy: memberMap[r.created_by] ?? "", AddedOn: r.created_at,
-    })));
+  const exportRows = () => filtered.map((r: any) => ({
+    Customer: r.customer_name, Phone: r.phone, Email: r.email ?? "", Website: r.website ?? "",
+    Location: r.location, Status: r.status, FollowUp: r.follow_up_date ?? "",
+    Remarks: r.remarks ?? "", AddedBy: memberMap[r.created_by] ?? "", AddedOn: r.created_at,
+  }));
+  const stamp = new Date().toISOString().slice(0,10);
+  const exportCsv = () => downloadCsv(`sales-${stamp}.csv`, exportRows());
+  const exportXlsx = () => downloadXlsx(`sales-${stamp}.xlsx`, exportRows(), "Sales");
 
   return (
     <div className="space-y-6">
@@ -55,7 +58,8 @@ function SalesPage() {
           <p className="text-muted-foreground">{isAdmin ? "All customer leads across the team." : "Your customer leads."}</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={exportCsv} disabled={!filtered.length}><Download className="h-4 w-4 mr-2" />Export</Button>
+          <Button variant="outline" onClick={exportCsv} disabled={!filtered.length}><Download className="h-4 w-4 mr-2" />CSV</Button>
+          <Button variant="outline" onClick={exportXlsx} disabled={!filtered.length}><FileSpreadsheet className="h-4 w-4 mr-2" />Excel</Button>
           <Button onClick={() => { setEditing(null); setOpen(true); }}><Plus className="h-4 w-4 mr-2" />New customer</Button>
         </div>
       </div>
