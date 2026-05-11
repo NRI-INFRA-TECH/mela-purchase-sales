@@ -11,7 +11,9 @@ RUN npm run build
 
 FROM node:20-alpine
 WORKDIR /app
+COPY package*.json ./
+RUN npm ci --omit=dev
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/serve.mjs ./serve.mjs
+COPY serve.mjs ./serve.mjs
 EXPOSE 3006
 CMD ["node", "serve.mjs"]
