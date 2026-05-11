@@ -8,30 +8,31 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Users, Truck, UserPlus } from "lucide-react";
+import { Users, Truck, UserPlus, Check, X } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { inviteUser } from "@/lib/admin-users.functions";
+import { inviteUser, approveAccessRequest, rejectAccessRequest } from "@/lib/admin-users.functions";
 
 export const Route = createFileRoute("/dashboard/admin")({ component: Admin });
 
 function Admin() {
-  const { isAdmin, loading } = useAuth();
+  const { isAdmin, isElevated, loading } = useAuth();
   const [addOpen, setAddOpen] = useState(false);
   if (loading) return null;
-  if (!isAdmin) return <Navigate to="/dashboard" />;
+  if (!isElevated) return <Navigate to="/dashboard" />;
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-bold tracking-tight">Admin</h1>
-          <p className="text-muted-foreground">Manage team members and roles.</p>
+          <p className="text-muted-foreground">Manage team members, roles, and access requests.</p>
         </div>
         <div className="flex gap-2">
           <Button asChild variant="outline">
@@ -40,21 +41,119 @@ function Admin() {
           <Button asChild variant="outline">
             <Link to="/dashboard/purchase"><Truck className="h-4 w-4 mr-2" /> Purchase / Vendors</Link>
           </Button>
-          <Button onClick={() => setAddOpen(true)}><UserPlus className="h-4 w-4 mr-2" /> Add user</Button>
+          {isAdmin && (
+            <Button onClick={() => setAddOpen(true)}><UserPlus className="h-4 w-4 mr-2" /> Add user</Button>
+          )}
         </div>
       </div>
-      <Tabs defaultValue="users">
+
+      <Tabs defaultValue={isAdmin ? "requests" : "users"}>
         <TabsList>
+          {isAdmin && <TabsTrigger value="requests">Access requests</TabsTrigger>}
           <TabsTrigger value="users">Team members</TabsTrigger>
         </TabsList>
+        {isAdmin && (
+          <TabsContent value="requests" className="mt-4"><RequestsTable /></TabsContent>
+        )}
         <TabsContent value="users" className="mt-4"><UsersTable addOpen={addOpen} setAddOpen={setAddOpen} /></TabsContent>
       </Tabs>
     </div>
   );
 }
 
-function UsersTable({ addOpen, setAddOpen }: { addOpen: boolean; setAddOpen: (v: boolean) => void }) {
+function RequestsTable() {
+  const approveFn = useServerFn(approveAccessRequest);
+  const rejectFn = useServerFn(rejectAccessRequest);
   const [busy, setBusy] = useState<string | null>(null);
+
+  const { data, refetch } = useQuery({
+    queryKey: ["access-requests"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("access_requests")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const approve = async (id: string) => {
+    setBusy(id);
+    try { await approveFn({ data: { requestId: id } }); toast.success("Approved"); refetch(); }
+    catch (e: any) { toast.error(e?.message ?? "Failed to approve"); }
+    finally { setBusy(null); }
+  };
+  const reject = async (id: string) => {
+    setBusy(id);
+    try { await rejectFn({ data: { requestId: id } }); toast.success("Rejected"); refetch(); }
+    catch (e: any) { toast.error(e?.message ?? "Failed to reject"); }
+    finally { setBusy(null); }
+  };
+
+  const rows = data ?? [];
+
+  return (
+    <Card>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Applicant</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Applying as</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Submitted</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((r: any) => {
+            const role = r.requested_executive
+              ? (r.requested_team === "sales" ? "Executive — Sales" : "Executive — Purchase")
+              : (r.requested_team === "sales" ? "Sales Team" : "Purchase Team");
+            return (
+              <TableRow key={r.id}>
+                <TableCell className="font-medium">{r.full_name || "—"}</TableCell>
+                <TableCell>{r.email}</TableCell>
+                <TableCell>{role}</TableCell>
+                <TableCell>
+                  <Badge variant={r.status === "pending" ? "secondary" : r.status === "approved" ? "default" : "destructive"} className="capitalize">
+                    {r.status}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">{format(new Date(r.created_at), "d MMM yyyy")}</TableCell>
+                <TableCell className="text-right">
+                  {r.status === "pending" ? (
+                    <div className="flex justify-end gap-2">
+                      <Button size="sm" variant="outline" disabled={busy === r.id} onClick={() => reject(r.id)}>
+                        <X className="h-4 w-4 mr-1" /> Reject
+                      </Button>
+                      <Button size="sm" disabled={busy === r.id} onClick={() => approve(r.id)}>
+                        <Check className="h-4 w-4 mr-1" /> Approve
+                      </Button>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">Reviewed</span>
+                  )}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+          {!rows.length && (
+            <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-12">
+              No access requests yet.
+            </TableCell></TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </Card>
+  );
+}
+
+function UsersTable({ addOpen, setAddOpen }: { addOpen: boolean; setAddOpen: (v: boolean) => void }) {
+  const { isAdmin, isExecSales, isExecPurchase } = useAuth();
+  const [busy, setBusy] = useState<string | null>(null);
+
   const { data, refetch } = useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => {
@@ -83,11 +182,11 @@ function UsersTable({ addOpen, setAddOpen }: { addOpen: boolean; setAddOpen: (v:
     if (res.error) toast.error(res.error.message); else { toast.success("Updated"); refetch(); }
   };
 
-  const toggleAdmin = async (uid: string, on: boolean) => {
-    setBusy(uid + "admin");
+  const toggleRole = async (uid: string, role: "admin" | "executive_sales" | "executive_purchase", on: boolean) => {
+    setBusy(uid + role);
     const res = on
-      ? await supabase.from("user_roles").insert({ user_id: uid, role: "admin" })
-      : await supabase.from("user_roles").delete().match({ user_id: uid, role: "admin" });
+      ? await supabase.from("user_roles").insert({ user_id: uid, role })
+      : await supabase.from("user_roles").delete().match({ user_id: uid, role });
     setBusy(null);
     if (res.error) toast.error(res.error.message); else { toast.success("Role updated"); refetch(); }
   };
@@ -99,9 +198,17 @@ function UsersTable({ addOpen, setAddOpen }: { addOpen: boolean; setAddOpen: (v:
     if (res.error) toast.error(res.error.message); else { toast.success("Updated"); refetch(); }
   };
 
+  // Exec users only see their own team's members
+  const visible = (data ?? []).filter((u: any) => {
+    if (isAdmin) return true;
+    if (isExecSales) return u.teams.includes("sales");
+    if (isExecPurchase) return u.teams.includes("purchase");
+    return false;
+  });
+
   return (
     <>
-      <Card>
+      <Card className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -109,27 +216,59 @@ function UsersTable({ addOpen, setAddOpen }: { addOpen: boolean; setAddOpen: (v:
               <TableHead>Email</TableHead>
               <TableHead>Sales</TableHead>
               <TableHead>Purchase</TableHead>
-              <TableHead>Admin</TableHead>
-              <TableHead>Active</TableHead>
+              {isAdmin && <TableHead>Exec Sales</TableHead>}
+              {isAdmin && <TableHead>Exec Purchase</TableHead>}
+              {isAdmin && <TableHead>Admin</TableHead>}
+              {isAdmin && <TableHead>Active</TableHead>}
               <TableHead>Joined</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {(data ?? []).map((u: any) => (
+            {visible.map((u: any) => (
               <TableRow key={u.id}>
                 <TableCell className="font-medium">{u.full_name || "—"}</TableCell>
                 <TableCell>{u.email}</TableCell>
-                <TableCell><Switch checked={u.teams.includes("sales")} disabled={busy === u.id+"sales"} onCheckedChange={(v) => toggleTeam(u.id, "sales", v)} /></TableCell>
-                <TableCell><Switch checked={u.teams.includes("purchase")} disabled={busy === u.id+"purchase"} onCheckedChange={(v) => toggleTeam(u.id, "purchase", v)} /></TableCell>
-                <TableCell><Switch checked={u.roles.includes("admin")} disabled={busy === u.id+"admin"} onCheckedChange={(v) => toggleAdmin(u.id, v)} /></TableCell>
-                <TableCell><Switch checked={u.is_active} disabled={busy === u.id+"active"} onCheckedChange={(v) => toggleActive(u.id, v)} /></TableCell>
+                <TableCell>
+                  <Switch
+                    checked={u.teams.includes("sales")}
+                    disabled={busy === u.id+"sales" || (!isAdmin && !isExecSales)}
+                    onCheckedChange={(v) => toggleTeam(u.id, "sales", v)}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Switch
+                    checked={u.teams.includes("purchase")}
+                    disabled={busy === u.id+"purchase" || (!isAdmin && !isExecPurchase)}
+                    onCheckedChange={(v) => toggleTeam(u.id, "purchase", v)}
+                  />
+                </TableCell>
+                {isAdmin && (
+                  <TableCell>
+                    <Switch checked={u.roles.includes("executive_sales")} disabled={busy === u.id+"executive_sales"} onCheckedChange={(v) => toggleRole(u.id, "executive_sales", v)} />
+                  </TableCell>
+                )}
+                {isAdmin && (
+                  <TableCell>
+                    <Switch checked={u.roles.includes("executive_purchase")} disabled={busy === u.id+"executive_purchase"} onCheckedChange={(v) => toggleRole(u.id, "executive_purchase", v)} />
+                  </TableCell>
+                )}
+                {isAdmin && (
+                  <TableCell>
+                    <Switch checked={u.roles.includes("admin")} disabled={busy === u.id+"admin"} onCheckedChange={(v) => toggleRole(u.id, "admin", v)} />
+                  </TableCell>
+                )}
+                {isAdmin && (
+                  <TableCell>
+                    <Switch checked={u.is_active} disabled={busy === u.id+"active"} onCheckedChange={(v) => toggleActive(u.id, v)} />
+                  </TableCell>
+                )}
                 <TableCell className="text-sm text-muted-foreground">{format(new Date(u.created_at), "d MMM yyyy")}</TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </Card>
-      <AddUserDialog open={addOpen} onOpenChange={setAddOpen} onCreated={refetch} />
+      {isAdmin && <AddUserDialog open={addOpen} onOpenChange={setAddOpen} onCreated={refetch} />}
     </>
   );
 }
