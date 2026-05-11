@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Store } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export const Route = createFileRoute("/signup")({ component: Signup });
 
@@ -35,9 +35,7 @@ function Signup() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-secondary/30">
       <Card className="w-full max-w-md p-8">
-        <div className="flex items-center gap-2 font-display font-bold text-xl mb-6">
-          <Store className="h-6 w-6 text-primary" /> BazarMela
-        </div>
+        <div className="mb-6"><BrandLogo size="md" /></div>
         <h2 className="font-display text-2xl font-bold">Create account</h2>
         <p className="text-sm text-muted-foreground mt-1">First user becomes admin automatically.</p>
         <form onSubmit={submit} className="space-y-4 mt-6">

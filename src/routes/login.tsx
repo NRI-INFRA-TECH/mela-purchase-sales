@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Store } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export const Route = createFileRoute("/login")({ component: Login });
 
@@ -29,9 +29,7 @@ function Login() {
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       <div className="hidden lg:flex flex-col justify-between bg-primary text-primary-foreground p-12 relative overflow-hidden">
-        <div className="flex items-center gap-2 font-display font-bold text-2xl">
-          <Store className="h-7 w-7" /> BazarMela
-        </div>
+        <BrandLogo size="lg" className="[&_span]:text-primary-foreground" />
         <div className="relative z-10">
           <h1 className="font-display text-5xl font-bold leading-tight">Run your<br/>marketplace ops<br/><span className="text-accent">with clarity.</span></h1>
           <p className="mt-6 max-w-md text-primary-foreground/80">A single dashboard for your Sales and Purchase teams — track every customer, every vendor, every follow-up.</p>
@@ -43,9 +41,7 @@ function Login() {
 
       <div className="flex items-center justify-center p-6 sm:p-12">
         <Card className="w-full max-w-md p-8 border-border/60">
-          <div className="lg:hidden flex items-center gap-2 font-display font-bold text-xl mb-6">
-            <Store className="h-6 w-6 text-primary" /> BazarMela
-          </div>
+          <div className="lg:hidden mb-6"><BrandLogo size="md" /></div>
           <h2 className="font-display text-2xl font-bold">Sign in</h2>
           <p className="text-sm text-muted-foreground mt-1">Access your team dashboard.</p>
           <form onSubmit={submit} className="space-y-4 mt-6">
