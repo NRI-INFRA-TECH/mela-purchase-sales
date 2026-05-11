@@ -1,12 +1,14 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
+import { Users, Truck } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
@@ -19,9 +21,19 @@ function Admin() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl font-bold tracking-tight">Admin</h1>
-        <p className="text-muted-foreground">Manage team members and roles.</p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl font-bold tracking-tight">Admin</h1>
+          <p className="text-muted-foreground">Manage team members and roles.</p>
+        </div>
+        <div className="flex gap-2">
+          <Button asChild variant="outline">
+            <Link to="/dashboard/sales"><Users className="h-4 w-4 mr-2" /> Sales / Customers</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/dashboard/purchase"><Truck className="h-4 w-4 mr-2" /> Purchase / Vendors</Link>
+          </Button>
+        </div>
       </div>
       <Tabs defaultValue="users">
         <TabsList>
