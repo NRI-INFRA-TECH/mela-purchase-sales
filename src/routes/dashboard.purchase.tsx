@@ -41,7 +41,7 @@ function PurchasePage() {
   const filtered = applyFilters(data ?? [], filters, (r: any) => `${r.vendor_name} ${r.phone} ${r.location} ${(r.product_categories ?? []).join(" ")}`);
 
   const exportRows = () => filtered.map((r: any) => ({
-    Vendor: r.vendor_name, Categories: (r.product_categories ?? []).join("; "), Phone: r.phone,
+    Company: r.company_name ?? "", Vendor: r.vendor_name, Categories: (r.product_categories ?? []).join("; "), Phone: r.phone,
     Email: r.email ?? "", Website: r.website ?? "", Location: r.location, MOQ: r.moq ?? "",
     PriceRange: r.price_range ?? "", Supply: r.supply_capacity ?? "", Delivery: r.delivery_capacity ?? "",
     Status: r.status, FollowUp: r.follow_up_date ?? "", AddedBy: memberMap[r.created_by] ?? "", AddedOn: r.created_at,
@@ -86,6 +86,7 @@ function PurchasePage() {
             {filtered.map((r: any) => (
               <TableRow key={r.id}>
                 <TableCell>
+                  {r.company_name && <div className="text-xs text-muted-foreground">{r.company_name}</div>}
                   <div className="font-medium">{r.vendor_name}</div>
                   {r.price_range && <div className="text-xs text-muted-foreground">{r.price_range}</div>}
                 </TableCell>
