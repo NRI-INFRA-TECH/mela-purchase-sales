@@ -14,6 +14,7 @@ import { Conditions } from "@/components/Conditions";
 
 export type VendorRow = {
   id?: string;
+  company_name: string | null;
   vendor_name: string;
   product_categories: string[];
   phone: string;
@@ -30,7 +31,7 @@ export type VendorRow = {
 };
 
 const empty: VendorRow = {
-  vendor_name: "", product_categories: [], phone: "", email: "", website: "",
+  company_name: "", vendor_name: "", product_categories: [], phone: "", email: "", website: "",
   location: "", moq: "", price_range: "", supply_capacity: "", delivery_capacity: "",
   status: "follow_up", follow_up_date: "", conditions: "",
 };
@@ -62,6 +63,7 @@ export function VendorForm({ open, onOpenChange, record, onSaved }: {
     if (!/^\d[\d\s\-+]{6,}$/.test(r.phone)) return toast.error("Enter a valid phone number");
     setBusy(true);
     const payload = {
+      company_name: r.company_name || null,
       vendor_name: r.vendor_name.trim(),
       product_categories: r.product_categories,
       phone: r.phone.trim(),
@@ -91,6 +93,7 @@ export function VendorForm({ open, onOpenChange, record, onSaved }: {
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader><DialogTitle>{r.id ? "Edit vendor" : "New vendor"}</DialogTitle></DialogHeader>
         <form onSubmit={submit} className="grid grid-cols-2 gap-4">
+          <div className="col-span-2"><Label>Company name</Label><Input value={r.company_name ?? ""} onChange={e => set({ company_name: e.target.value })} /></div>
           <div className="col-span-2"><Label>Vendor name *</Label><Input required value={r.vendor_name} onChange={e => set({ vendor_name: e.target.value })} /></div>
           <div className="col-span-2">
             <Label>Product categories *</Label>

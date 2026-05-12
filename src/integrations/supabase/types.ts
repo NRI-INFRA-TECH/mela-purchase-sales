@@ -175,6 +175,7 @@ export type Database = {
       }
       vendor_records: {
         Row: {
+          company_name: string | null
           conditions: string | null
           created_at: string
           created_by: string
@@ -194,6 +195,7 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          company_name?: string | null
           conditions?: string | null
           created_at?: string
           created_by: string
@@ -213,6 +215,7 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          company_name?: string | null
           conditions?: string | null
           created_at?: string
           created_by?: string
