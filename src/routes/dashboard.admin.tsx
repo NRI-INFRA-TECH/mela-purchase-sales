@@ -215,6 +215,8 @@ function UsersTable({ addOpen, setAddOpen }: { addOpen: boolean; setAddOpen: (v:
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
+              <TableHead>Vendor Name</TableHead>
+              <TableHead>Company</TableHead>
               <TableHead>Sales</TableHead>
               <TableHead>Purchase</TableHead>
               {isAdmin && <TableHead>Mgr Sales</TableHead>}
@@ -229,6 +231,8 @@ function UsersTable({ addOpen, setAddOpen }: { addOpen: boolean; setAddOpen: (v:
               <TableRow key={u.id}>
                 <TableCell className="font-medium">{u.full_name || "—"}</TableCell>
                 <TableCell>{u.email}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">{u.vendor_name || "—"}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">{u.company_name || "—"}</TableCell>
                 <TableCell>
                   <Switch
                     checked={u.teams.includes("sales")}

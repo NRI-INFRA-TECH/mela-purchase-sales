@@ -1,10 +1,12 @@
 import { Link, Outlet, createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, Users, Truck, ShieldCheck, LogOut } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/dashboard")({ component: DashboardLayout });
 
@@ -12,6 +14,16 @@ function DashboardLayout() {
   const { session, loading, isAdmin, isExecSales, isExecPurchase, isElevated, fullName, signOut, teams } = useAuth();
   const navigate = useNavigate();
   const { location } = useRouterState();
+
+  const { data: pendingCount } = useQuery({
+    queryKey: ["pending-requests-count"],
+    enabled: isElevated,
+    queryFn: async () => {
+      const { count } = await supabase.from("access_requests").select("*", { count: "exact", head: true }).eq("status", "pending");
+      return count ?? 0;
+    },
+    refetchInterval: 60_000,
+  });
 
   useEffect(() => {
     if (!loading && !session) navigate({ to: "/login" });
@@ -56,7 +68,13 @@ function DashboardLayout() {
                     : "text-sidebar-foreground hover:bg-sidebar-accent"
                 )}
               >
-                <n.icon className="h-4 w-4" /> {n.label}
+                <n.icon className="h-4 w-4" />
+              {n.label}
+              {n.to === "/dashboard/admin" && (pendingCount ?? 0) > 0 && (
+                <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive text-[11px] font-semibold text-destructive-foreground px-1">
+                  {pendingCount}
+                </span>
+              )}
               </Link>
             );
           })}

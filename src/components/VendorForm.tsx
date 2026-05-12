@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import type { RecordStatus } from "@/lib/status";
 import { X } from "lucide-react";
+import { Conditions } from "@/components/Conditions";
 
 export type VendorRow = {
   id?: string;
@@ -25,12 +26,13 @@ export type VendorRow = {
   delivery_capacity: string | null;
   status: RecordStatus;
   follow_up_date: string | null;
+  conditions: string | null;
 };
 
 const empty: VendorRow = {
   vendor_name: "", product_categories: [], phone: "", email: "", website: "",
   location: "", moq: "", price_range: "", supply_capacity: "", delivery_capacity: "",
-  status: "follow_up", follow_up_date: "",
+  status: "follow_up", follow_up_date: "", conditions: "",
 };
 
 export function VendorForm({ open, onOpenChange, record, onSaved }: {
@@ -72,6 +74,7 @@ export function VendorForm({ open, onOpenChange, record, onSaved }: {
       delivery_capacity: r.delivery_capacity || null,
       status: r.status,
       follow_up_date: r.follow_up_date || null,
+      conditions: r.conditions || null,
     };
     const res = r.id
       ? await supabase.from("vendor_records").update(payload).eq("id", r.id)
@@ -130,6 +133,9 @@ export function VendorForm({ open, onOpenChange, record, onSaved }: {
           <div>
             <Label>Follow-up date {r.status === "follow_up" && "*"}</Label>
             <Input type="date" value={r.follow_up_date ?? ""} onChange={e => set({ follow_up_date: e.target.value })} required={r.status === "follow_up"} />
+          </div>
+          <div className="col-span-2">
+            <Conditions value={r.conditions ?? ""} onChange={v => set({ conditions: v })} />
           </div>
           <DialogFooter className="col-span-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>

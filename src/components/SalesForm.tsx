@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import type { RecordStatus } from "@/lib/status";
+import { Conditions } from "@/components/Conditions";
 
 export type SalesRow = {
   id?: string;
@@ -20,11 +21,12 @@ export type SalesRow = {
   status: RecordStatus;
   follow_up_date: string | null;
   remarks: string | null;
+  conditions: string | null;
 };
 
 const empty: SalesRow = {
   customer_name: "", phone: "", email: "", website: "",
-  location: "", status: "follow_up", follow_up_date: "", remarks: "",
+  location: "", status: "follow_up", follow_up_date: "", remarks: "", conditions: "",
 };
 
 export function SalesForm({ open, onOpenChange, record, onSaved }: {
@@ -57,6 +59,7 @@ export function SalesForm({ open, onOpenChange, record, onSaved }: {
       status: r.status,
       follow_up_date: r.follow_up_date || null,
       remarks: r.remarks || null,
+      conditions: r.conditions || null,
     };
     const res = r.id
       ? await supabase.from("sales_records").update(payload).eq("id", r.id)
@@ -96,6 +99,9 @@ export function SalesForm({ open, onOpenChange, record, onSaved }: {
           <div className="col-span-2">
             <Label>Remarks</Label>
             <Textarea maxLength={500} value={r.remarks ?? ""} onChange={e => set({ remarks: e.target.value })} placeholder="Notes about the conversation…" />
+          </div>
+          <div className="col-span-2">
+            <Conditions value={r.conditions ?? ""} onChange={v => set({ conditions: v })} />
           </div>
           <DialogFooter className="col-span-2 mt-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>

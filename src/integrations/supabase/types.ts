@@ -62,29 +62,36 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          company_name: string | null
           email: string
           full_name: string
           id: string
           is_active: boolean
+          vendor_name: string | null
         }
         Insert: {
           created_at?: string
+          company_name?: string | null
           email: string
           full_name?: string
           id: string
           is_active?: boolean
+          vendor_name?: string | null
         }
         Update: {
           created_at?: string
+          company_name?: string | null
           email?: string
           full_name?: string
           id?: string
           is_active?: boolean
+          vendor_name?: string | null
         }
         Relationships: []
       }
       sales_records: {
         Row: {
+          conditions: string | null
           created_at: string
           created_by: string
           customer_name: string
@@ -99,6 +106,7 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          conditions?: string | null
           created_at?: string
           created_by: string
           customer_name: string
@@ -113,6 +121,7 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          conditions?: string | null
           created_at?: string
           created_by?: string
           customer_name?: string
@@ -166,6 +175,7 @@ export type Database = {
       }
       vendor_records: {
         Row: {
+          conditions: string | null
           created_at: string
           created_by: string
           delivery_capacity: string | null
@@ -184,6 +194,7 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          conditions?: string | null
           created_at?: string
           created_by: string
           delivery_capacity?: string | null
@@ -202,6 +213,7 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          conditions?: string | null
           created_at?: string
           created_by?: string
           delivery_capacity?: string | null
