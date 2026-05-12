@@ -80,6 +80,7 @@ jobs:
               --restart unless-stopped \
               -p 3003:3006 \
               -e SUPABASE_URL="${{ secrets.SUPABASE_URL }}" \
+              -e SUPABASE_PUBLISHABLE_KEY="${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}" \
               -e SUPABASE_SERVICE_ROLE_KEY="${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
               ghcr.io/nri-infra-tech/sales-purchase:latest
 
