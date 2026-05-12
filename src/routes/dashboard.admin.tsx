@@ -14,10 +14,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Users, Truck, UserPlus, Check, X } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Users, Truck, UserPlus, Check, X, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { inviteUser, approveAccessRequest, rejectAccessRequest } from "@/lib/admin-users.functions";
+import { inviteUser, approveAccessRequest, rejectAccessRequest, deleteUser } from "@/lib/admin-users.functions";
 
 export const Route = createFileRoute("/dashboard/admin")({ component: Admin });
 
@@ -152,8 +153,22 @@ function RequestsTable() {
 }
 
 function UsersTable({ addOpen, setAddOpen }: { addOpen: boolean; setAddOpen: (v: boolean) => void }) {
-  const { isAdmin, isExecSales, isExecPurchase } = useAuth();
+  const { isAdmin, isExecSales, isExecPurchase, user } = useAuth();
   const [busy, setBusy] = useState<string | null>(null);
+  const deleteFn = useServerFn(deleteUser);
+
+  const handleDelete = async (uid: string) => {
+    setBusy(uid + "delete");
+    try {
+      await deleteFn({ data: { userId: uid } });
+      toast.success("User deleted");
+      refetch();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to delete user");
+    } finally {
+      setBusy(null);
+    }
+  };
 
   const { data, refetch } = useQuery({
     queryKey: ["admin-users"],
@@ -224,6 +239,7 @@ function UsersTable({ addOpen, setAddOpen }: { addOpen: boolean; setAddOpen: (v:
               {isAdmin && <TableHead>Admin</TableHead>}
               {isAdmin && <TableHead>Active</TableHead>}
               <TableHead>Joined</TableHead>
+              {isAdmin && <TableHead className="w-10"></TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -268,6 +284,35 @@ function UsersTable({ addOpen, setAddOpen }: { addOpen: boolean; setAddOpen: (v:
                   </TableCell>
                 )}
                 <TableCell className="text-sm text-muted-foreground">{format(new Date(u.created_at), "d MMM yyyy")}</TableCell>
+                {isAdmin && (
+                  <TableCell>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="icon" variant="ghost" disabled={u.id === user?.id} className="text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete {u.full_name || u.email}?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This permanently deletes the user account and all their data. This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            className="bg-destructive hover:bg-destructive/90"
+                            disabled={busy === u.id + "delete"}
+                            onClick={() => handleDelete(u.id)}
+                          >
+                            {busy === u.id + "delete" ? "Deleting…" : "Delete"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>

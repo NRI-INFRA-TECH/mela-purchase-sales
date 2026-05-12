@@ -111,3 +111,16 @@ export const rejectAccessRequest = createServerFn({ method: "POST" })
 
     return { ok: true };
   });
+
+export const deleteUser = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ userId: z.string().uuid() }).parse(data))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    if (data.userId === context.userId) throw new Response("Cannot delete your own account", { status: 400 });
+
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
+    if (error) throw new Response(error.message, { status: 400 });
+
+    return { ok: true };
+  });
