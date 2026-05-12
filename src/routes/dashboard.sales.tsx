@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusBadge } from "@/components/StatusBadge";
+import { Badge } from "@/components/ui/badge";
 import { SalesForm, type SalesRow } from "@/components/SalesForm";
 import { FilterBar, applyFilters, emptyFilters, type Filters } from "@/components/FilterBar";
 import { Plus, Pencil, Download, FileSpreadsheet } from "lucide-react";
@@ -42,9 +43,12 @@ function SalesPage() {
   const filtered = applyFilters(data ?? [], filters, (r: any) => `${r.customer_name} ${r.phone} ${r.location} ${r.email ?? ""}`);
 
   const exportRows = () => filtered.map((r: any) => ({
-    Customer: r.customer_name, Phone: r.phone, Email: r.email ?? "", Website: r.website ?? "",
+    Company: r.company_name ?? "", Customer: r.customer_name,
+    Categories: (r.categories ?? []).join("; "),
+    Phone: r.phone, Email: r.email ?? "", Website: r.website ?? "",
     Location: r.location, Status: r.status, FollowUp: r.follow_up_date ?? "",
-    Remarks: r.remarks ?? "", AddedBy: memberMap[r.created_by] ?? "", AddedOn: r.created_at,
+    Remarks: r.remarks ?? "", Conditions: r.conditions ?? "",
+    AddedBy: memberMap[r.created_by] ?? "", AddedOn: r.created_at,
   }));
   const stamp = new Date().toISOString().slice(0,10);
   const exportCsv = () => downloadCsv(`sales-${stamp}.csv`, exportRows());
@@ -72,7 +76,9 @@ function SalesPage() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Company</TableHead>
               <TableHead>Customer</TableHead>
+              <TableHead>Categories</TableHead>
               <TableHead>Phone</TableHead>
               <TableHead>Location</TableHead>
               <TableHead>Status</TableHead>
@@ -85,9 +91,18 @@ function SalesPage() {
           <TableBody>
             {filtered.map((r: any) => (
               <TableRow key={r.id}>
+                <TableCell className="font-medium">{r.company_name || "—"}</TableCell>
                 <TableCell>
                   <div className="font-medium">{r.customer_name}</div>
                   {r.email && <div className="text-xs text-muted-foreground">{r.email}</div>}
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-1 max-w-[180px]">
+                    {(r.categories ?? []).slice(0, 3).map((c: string) => (
+                      <Badge key={c} variant="secondary" className="text-xs">{c}</Badge>
+                    ))}
+                    {(r.categories ?? []).length > 3 && <span className="text-xs text-muted-foreground">+{(r.categories ?? []).length - 3}</span>}
+                  </div>
                 </TableCell>
                 <TableCell>{r.phone}</TableCell>
                 <TableCell>{r.location}</TableCell>
@@ -103,7 +118,7 @@ function SalesPage() {
               </TableRow>
             ))}
             {!filtered.length && (
-              <TableRow><TableCell colSpan={isAdmin ? 8 : 7} className="text-center text-muted-foreground py-12">
+              <TableRow><TableCell colSpan={isAdmin ? 10 : 9} className="text-center text-muted-foreground py-12">
                 No records match. Add your first customer to get started.
               </TableCell></TableRow>
             )}

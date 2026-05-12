@@ -72,6 +72,7 @@ function PurchasePage() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Company</TableHead>
               <TableHead>Vendor</TableHead>
               <TableHead>Categories</TableHead>
               <TableHead>Phone</TableHead>
@@ -85,8 +86,8 @@ function PurchasePage() {
           <TableBody>
             {filtered.map((r: any) => (
               <TableRow key={r.id}>
+                <TableCell className="font-medium">{r.company_name || "—"}</TableCell>
                 <TableCell>
-                  {r.company_name && <div className="text-xs text-muted-foreground">{r.company_name}</div>}
                   <div className="font-medium">{r.vendor_name}</div>
                   {r.price_range && <div className="text-xs text-muted-foreground">{r.price_range}</div>}
                 </TableCell>
@@ -111,7 +112,7 @@ function PurchasePage() {
               </TableRow>
             ))}
             {!filtered.length && (
-              <TableRow><TableCell colSpan={isAdmin ? 8 : 7} className="text-center text-muted-foreground py-12">
+              <TableRow><TableCell colSpan={isAdmin ? 9 : 8} className="text-center text-muted-foreground py-12">
                 No vendors yet. Add your first vendor to get started.
               </TableCell></TableRow>
             )}

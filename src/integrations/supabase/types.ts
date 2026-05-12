@@ -91,6 +91,8 @@ export type Database = {
       }
       sales_records: {
         Row: {
+          categories: string[]
+          company_name: string | null
           conditions: string | null
           created_at: string
           created_by: string
@@ -106,6 +108,8 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          categories?: string[]
+          company_name?: string | null
           conditions?: string | null
           created_at?: string
           created_by: string
@@ -121,6 +125,8 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          categories?: string[]
+          company_name?: string | null
           conditions?: string | null
           created_at?: string
           created_by?: string
