@@ -10,16 +10,18 @@ import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/StatusBadge";
 import { VendorForm, type VendorRow } from "@/components/VendorForm";
 import { FilterBar, applyFilters, emptyFilters, type Filters } from "@/components/FilterBar";
-import { Plus, Pencil, Download, FileSpreadsheet } from "lucide-react";
+import { Plus, Pencil, Download, FileSpreadsheet, Upload } from "lucide-react";
 import { format } from "date-fns";
 import { downloadCsv } from "@/lib/csv";
 import { downloadXlsx } from "@/lib/xlsx";
+import { VendorBulkUpload } from "@/components/VendorBulkUpload";
 
 export const Route = createFileRoute("/dashboard/purchase")({ component: PurchasePage });
 
 function PurchasePage() {
   const { isAdmin } = useAuth();
   const [open, setOpen] = useState(false);
+  const [bulkOpen, setBulkOpen] = useState(false);
   const [editing, setEditing] = useState<VendorRow | null>(null);
   const [filters, setFilters] = useState<Filters>(emptyFilters);
 
@@ -60,6 +62,7 @@ function PurchasePage() {
         <div className="flex gap-2">
           <Button variant="outline" onClick={exportCsv} disabled={!filtered.length}><Download className="h-4 w-4 mr-2" />CSV</Button>
           <Button variant="outline" onClick={exportXlsx} disabled={!filtered.length}><FileSpreadsheet className="h-4 w-4 mr-2" />Excel</Button>
+          <Button variant="outline" onClick={() => setBulkOpen(true)}><Upload className="h-4 w-4 mr-2" />Bulk upload</Button>
           <Button onClick={() => { setEditing(null); setOpen(true); }}><Plus className="h-4 w-4 mr-2" />New vendor</Button>
         </div>
       </div>
@@ -121,6 +124,7 @@ function PurchasePage() {
       </Card>
 
       <VendorForm open={open} onOpenChange={setOpen} record={editing} onSaved={refetch} />
+      <VendorBulkUpload open={bulkOpen} onOpenChange={setBulkOpen} onUploaded={refetch} />
     </div>
   );
 }
