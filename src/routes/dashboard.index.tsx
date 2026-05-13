@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -44,10 +44,10 @@ function Overview() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard icon={Users} label="Sales records" value={sales.length} tone="primary" />
-        <KpiCard icon={Truck} label="Vendor records" value={vendors.length} tone="accent" />
-        <KpiCard icon={CheckCircle2} label="Accepted" value={accepted} tone="success" />
-        <KpiCard icon={Clock} label="Follow-ups due (7d)" value={dueThisWeek} tone="warning" />
+        <KpiCard icon={Users} label="Sales records" value={sales.length} tone="primary" to="/dashboard/sales" />
+        <KpiCard icon={Truck} label="Vendor records" value={vendors.length} tone="accent" to="/dashboard/purchase" />
+        <KpiCard icon={CheckCircle2} label="Accepted" value={accepted} tone="success" to="/dashboard/sales" />
+        <KpiCard icon={Clock} label="Follow-ups due (7d)" value={dueThisWeek} tone="warning" to="/dashboard/sales" />
       </div>
 
       <Card className="p-5">
@@ -146,7 +146,7 @@ function StatusRow({ label, arr, total, color, users }: {
   );
 }
 
-function KpiCard({ icon: Icon, label, value, tone }: { icon: any; label: string; value: number; tone: "primary" | "accent" | "success" | "warning" }) {
+function KpiCard({ icon: Icon, label, value, tone, to }: { icon: any; label: string; value: number; tone: "primary" | "accent" | "success" | "warning"; to: string }) {
   const map = {
     primary: "bg-primary/10 text-primary",
     accent: "bg-accent/20 text-[oklch(0.45_0.15_55)]",
@@ -154,12 +154,14 @@ function KpiCard({ icon: Icon, label, value, tone }: { icon: any; label: string;
     warning: "bg-warning/20 text-[oklch(0.45_0.15_55)]",
   };
   return (
-    <Card className="p-5">
-      <div className={`h-10 w-10 rounded-lg ${map[tone]} flex items-center justify-center mb-3`}>
-        <Icon className="h-5 w-5" />
-      </div>
-      <p className="text-3xl font-display font-bold">{value}</p>
-      <p className="text-sm text-muted-foreground mt-1">{label}</p>
-    </Card>
+    <Link to={to} className="block group">
+      <Card className="p-5 transition-shadow group-hover:shadow-md cursor-pointer">
+        <div className={`h-10 w-10 rounded-lg ${map[tone]} flex items-center justify-center mb-3`}>
+          <Icon className="h-5 w-5" />
+        </div>
+        <p className="text-3xl font-display font-bold">{value}</p>
+        <p className="text-sm text-muted-foreground mt-1">{label}</p>
+      </Card>
+    </Link>
   );
 }
