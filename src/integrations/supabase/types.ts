@@ -218,6 +218,7 @@ export type Database = {
           status: Database["public"]["Enums"]["record_status"]
           supply_capacity: string | null
           updated_at: string
+          vendor_code: string | null
           vendor_name: string
           website: string | null
         }
@@ -238,6 +239,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["record_status"]
           supply_capacity?: string | null
           updated_at?: string
+          vendor_code?: string | null
           vendor_name: string
           website?: string | null
         }
@@ -258,6 +260,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["record_status"]
           supply_capacity?: string | null
           updated_at?: string
+          vendor_code?: string | null
           vendor_name?: string
           website?: string | null
         }

@@ -51,7 +51,8 @@ function PurchasePage() {
   const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   const exportRows = () => filtered.map((r: any) => ({
-    Company: r.company_name ?? "", Vendor: r.vendor_name, Categories: (r.product_categories ?? []).join("; "), Phone: r.phone,
+    VendorCode: r.vendor_code ?? "", Company: r.company_name ?? "", Vendor: r.vendor_name,
+    Categories: (r.product_categories ?? []).join("; "), Phone: r.phone,
     Email: r.email ?? "", Website: r.website ?? "", Location: r.location, MOQ: r.moq ?? "",
     PriceRange: r.price_range ?? "", Supply: r.supply_capacity ?? "", Delivery: r.delivery_capacity ?? "",
     Status: r.status, FollowUp: r.follow_up_date ?? "", AddedBy: memberMap[r.created_by] ?? "", AddedOn: r.created_at,
@@ -84,6 +85,7 @@ function PurchasePage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="whitespace-nowrap">Vendor ID</TableHead>
                 <TableHead>Company</TableHead>
                 <TableHead>Vendor</TableHead>
                 <TableHead>Categories</TableHead>
@@ -98,6 +100,11 @@ function PurchasePage() {
             <TableBody>
               {paginated.map((r: any) => (
                 <TableRow key={r.id}>
+                  <TableCell>
+                    {r.vendor_code
+                      ? <span className="text-xs font-mono bg-primary/10 text-primary border border-primary/20 rounded px-1.5 py-0.5 whitespace-nowrap">{r.vendor_code}</span>
+                      : <span className="text-xs text-muted-foreground">—</span>}
+                  </TableCell>
                   <TableCell className="font-medium">{r.company_name || "—"}</TableCell>
                   <TableCell>
                     <div className="font-medium">{r.vendor_name}</div>
@@ -124,7 +131,7 @@ function PurchasePage() {
                 </TableRow>
               ))}
               {!filtered.length && (
-                <TableRow><TableCell colSpan={isAdmin ? 9 : 8} className="text-center text-muted-foreground py-12">
+                <TableRow><TableCell colSpan={isAdmin ? 10 : 9} className="text-center text-muted-foreground py-12">
                   No vendors yet. Add your first vendor to get started.
                 </TableCell></TableRow>
               )}

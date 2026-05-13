@@ -14,6 +14,7 @@ import { Conditions } from "@/components/Conditions";
 
 export type VendorRow = {
   id?: string;
+  vendor_code?: string | null;
   company_name: string | null;
   vendor_name: string;
   product_categories: string[];
@@ -91,7 +92,16 @@ export function VendorForm({ open, onOpenChange, record, onSaved }: {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader><DialogTitle>{r.id ? "Edit vendor" : "New vendor"}</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-3">
+            {r.id ? "Edit vendor" : "New vendor"}
+            {r.vendor_code && (
+              <span className="text-xs font-mono font-normal bg-primary/10 text-primary border border-primary/20 rounded px-2 py-0.5">
+                {r.vendor_code}
+              </span>
+            )}
+          </DialogTitle>
+        </DialogHeader>
         <form onSubmit={submit} className="grid grid-cols-2 gap-4">
           <div className="col-span-2"><Label>Company name</Label><Input value={r.company_name ?? ""} onChange={e => set({ company_name: e.target.value })} /></div>
           <div className="col-span-2"><Label>Vendor name *</Label><Input required value={r.vendor_name} onChange={e => set({ vendor_name: e.target.value })} /></div>
