@@ -15,7 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Users, Truck, UserPlus, Check, X, Trash2 } from "lucide-react";
+import { Users, Truck, UserPlus, Check, X, Trash2, LogIn, LogOut } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { inviteUser, approveAccessRequest, rejectAccessRequest, deleteUser } from "@/lib/admin-users.functions";
@@ -52,11 +52,15 @@ function Admin() {
         <TabsList>
           {isAdmin && <TabsTrigger value="requests">Access requests</TabsTrigger>}
           <TabsTrigger value="users">Team members</TabsTrigger>
+          {isAdmin && <TabsTrigger value="activity">Activity log</TabsTrigger>}
         </TabsList>
         {isAdmin && (
           <TabsContent value="requests" className="mt-4"><RequestsTable /></TabsContent>
         )}
         <TabsContent value="users" className="mt-4"><UsersTable addOpen={addOpen} setAddOpen={setAddOpen} /></TabsContent>
+        {isAdmin && (
+          <TabsContent value="activity" className="mt-4"><ActivityLog /></TabsContent>
+        )}
       </Tabs>
     </div>
   );
@@ -392,5 +396,77 @@ function AddUserDialog({ open, onOpenChange, onCreated }: { open: boolean; onOpe
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function ActivityLog() {
+  const { data: profiles } = useQuery({
+    queryKey: ["profiles-all"],
+    queryFn: async () => (await supabase.from("profiles").select("id, full_name, email")).data ?? [],
+  });
+
+  const profileMap = Object.fromEntries((profiles ?? []).map((p: any) => [p.id, { name: p.full_name, email: p.email }]));
+
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ["activity-log"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_activity_log")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  return (
+    <Card>
+      <div className="flex items-center justify-between px-4 py-3 border-b">
+        <p className="text-sm font-medium">Login &amp; logout events (last 200)</p>
+        <Button size="sm" variant="ghost" onClick={() => refetch()}>Refresh</Button>
+      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>User</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Event</TableHead>
+            <TableHead>Date &amp; Time</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {isLoading && (
+            <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">Loading…</TableCell></TableRow>
+          )}
+          {!isLoading && (data ?? []).map((row: any) => {
+            const p = profileMap[row.user_id];
+            return (
+              <TableRow key={row.id}>
+                <TableCell className="font-medium">{p?.name || "—"}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">{p?.email || row.user_id}</TableCell>
+                <TableCell>
+                  {row.event === "login" ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap bg-success/15 text-success border-success/30">
+                      <LogIn className="h-3 w-3" /> Login
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap bg-muted text-muted-foreground border-border">
+                      <LogOut className="h-3 w-3" /> Logout
+                    </span>
+                  )}
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {format(new Date(row.created_at), "d MMM yyyy, h:mm a")}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+          {!isLoading && !(data ?? []).length && (
+            <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">No activity recorded yet.</TableCell></TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </Card>
   );
 }

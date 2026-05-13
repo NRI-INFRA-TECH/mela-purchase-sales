@@ -42,6 +42,9 @@ function Login() {
       }
     }
 
+    if (uid) {
+      await supabase.from("user_activity_log").insert({ user_id: uid, event: "login" });
+    }
     setBusy(false);
     toast.success("Welcome back");
     navigate({ to: "/dashboard" });

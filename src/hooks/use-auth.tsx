@@ -73,7 +73,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     teams,
     roles,
     fullName,
-    signOut: async () => { await supabase.auth.signOut(); },
+    signOut: async () => {
+      if (session?.user?.id) {
+        await supabase.from("user_activity_log").insert({ user_id: session.user.id, event: "logout" });
+      }
+      await supabase.auth.signOut();
+    },
     refresh: async () => { if (session?.user) await loadProfile(session.user.id); },
   };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

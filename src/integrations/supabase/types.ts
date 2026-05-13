@@ -143,6 +143,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_activity_log: {
+        Row: {
+          id: string
+          user_id: string
+          event: "login" | "logout"
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          event: "login" | "logout"
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          event?: "login" | "logout"
+          created_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
