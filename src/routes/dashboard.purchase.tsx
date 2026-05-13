@@ -10,11 +10,13 @@ import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/StatusBadge";
 import { VendorForm, type VendorRow } from "@/components/VendorForm";
 import { FilterBar, applyFilters, emptyFilters, type Filters } from "@/components/FilterBar";
-import { Plus, Pencil, Download, FileSpreadsheet, Upload, ChevronLeft, ChevronRight } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Plus, Pencil, Trash2, Download, FileSpreadsheet, Upload, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { downloadCsv } from "@/lib/csv";
 import { downloadXlsx } from "@/lib/xlsx";
 import { VendorBulkUpload } from "@/components/VendorBulkUpload";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/purchase")({ component: PurchasePage });
 
@@ -25,6 +27,7 @@ function PurchasePage() {
   const [open, setOpen] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [editing, setEditing] = useState<VendorRow | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [page, setPage] = useState(0);
 
@@ -57,6 +60,13 @@ function PurchasePage() {
     PriceRange: r.price_range ?? "", Supply: r.supply_capacity ?? "", Delivery: r.delivery_capacity ?? "",
     Status: r.status, FollowUp: r.follow_up_date ?? "", AddedBy: memberMap[r.created_by] ?? "", AddedOn: r.created_at,
   }));
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase.from("vendor_records").delete().eq("id", id);
+    if (error) { toast.error("Failed to delete record"); return; }
+    toast.success("Vendor record deleted");
+    refetch();
+  };
+
   const stamp = new Date().toISOString().slice(0, 10);
   const exportCsv = () => downloadCsv(`vendors-${stamp}.csv`, exportRows());
   const exportXlsx = () => downloadXlsx(`vendors-${stamp}.xlsx`, exportRows(), "Vendors");
@@ -94,7 +104,7 @@ function PurchasePage() {
                 <TableHead>Status</TableHead>
                 <TableHead className="whitespace-nowrap">Follow-up</TableHead>
                 {isAdmin && <TableHead className="whitespace-nowrap">Added by</TableHead>}
-                <TableHead className="w-12"></TableHead>
+                <TableHead className="w-20"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -124,14 +134,35 @@ function PurchasePage() {
                   <TableCell className="text-sm whitespace-nowrap">{r.follow_up_date ? format(new Date(r.follow_up_date), "d MMM yyyy") : "—"}</TableCell>
                   {isAdmin && <TableCell className="text-sm">{memberMap[r.created_by] ?? "—"}</TableCell>}
                   <TableCell>
-                    <Button size="icon" variant="ghost" onClick={() => { setEditing(r); setOpen(true); }}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <Button size="icon" variant="ghost" onClick={() => { setEditing(r); setOpen(true); }}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <AlertDialog open={deleting === r.id} onOpenChange={o => !o && setDeleting(null)}>
+                        <AlertDialogTrigger asChild>
+                          <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => setDeleting(r.id)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete vendor?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will permanently delete <strong>{r.vendor_name}</strong> and cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction className="bg-destructive hover:bg-destructive/90" onClick={() => handleDelete(r.id)}>Delete</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
               {!filtered.length && (
-                <TableRow><TableCell colSpan={isAdmin ? 10 : 9} className="text-center text-muted-foreground py-12">
+                <TableRow><TableCell colSpan={isAdmin ? 11 : 10} className="text-center text-muted-foreground py-12">
                   No vendors yet. Add your first vendor to get started.
                 </TableCell></TableRow>
               )}

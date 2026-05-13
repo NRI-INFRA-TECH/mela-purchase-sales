@@ -10,10 +10,12 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { SalesForm, type SalesRow } from "@/components/SalesForm";
 import { FilterBar, applyFilters, emptyFilters, type Filters } from "@/components/FilterBar";
-import { Plus, Pencil, Download, FileSpreadsheet, ChevronLeft, ChevronRight } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Plus, Pencil, Trash2, Download, FileSpreadsheet, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { downloadCsv } from "@/lib/csv";
 import { downloadXlsx } from "@/lib/xlsx";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/sales")({ component: SalesPage });
 
@@ -23,6 +25,7 @@ function SalesPage() {
   const { isAdmin } = useAuth();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<SalesRow | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [page, setPage] = useState(0);
 
@@ -58,6 +61,13 @@ function SalesPage() {
     Remarks: r.remarks ?? "", Conditions: r.conditions ?? "",
     AddedBy: memberMap[r.created_by] ?? "", AddedOn: r.created_at,
   }));
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase.from("sales_records").delete().eq("id", id);
+    if (error) { toast.error("Failed to delete record"); return; }
+    toast.success("Customer record deleted");
+    refetch();
+  };
+
   const stamp = new Date().toISOString().slice(0, 10);
   const exportCsv = () => downloadCsv(`sales-${stamp}.csv`, exportRows());
   const exportXlsx = () => downloadXlsx(`sales-${stamp}.xlsx`, exportRows(), "Sales");
@@ -94,7 +104,7 @@ function SalesPage() {
                 <TableHead className="whitespace-nowrap">Follow-up</TableHead>
                 {isAdmin && <TableHead className="whitespace-nowrap">Added by</TableHead>}
                 <TableHead>Added</TableHead>
-                <TableHead className="w-12"></TableHead>
+                <TableHead className="w-20"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -120,14 +130,35 @@ function SalesPage() {
                   {isAdmin && <TableCell className="text-sm">{memberMap[r.created_by] ?? "—"}</TableCell>}
                   <TableCell className="text-sm text-muted-foreground whitespace-nowrap">{format(new Date(r.created_at), "d MMM")}</TableCell>
                   <TableCell>
-                    <Button size="icon" variant="ghost" onClick={() => { setEditing(r); setOpen(true); }}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <Button size="icon" variant="ghost" onClick={() => { setEditing(r); setOpen(true); }}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <AlertDialog open={deleting === r.id} onOpenChange={o => !o && setDeleting(null)}>
+                        <AlertDialogTrigger asChild>
+                          <Button size="icon" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => setDeleting(r.id)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete customer?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will permanently delete <strong>{r.customer_name}</strong> and cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction className="bg-destructive hover:bg-destructive/90" onClick={() => handleDelete(r.id)}>Delete</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
               {!filtered.length && (
-                <TableRow><TableCell colSpan={isAdmin ? 10 : 9} className="text-center text-muted-foreground py-12">
+                <TableRow><TableCell colSpan={isAdmin ? 11 : 10} className="text-center text-muted-foreground py-12">
                   No records match. Add your first customer to get started.
                 </TableCell></TableRow>
               )}
