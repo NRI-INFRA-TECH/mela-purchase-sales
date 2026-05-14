@@ -110,7 +110,7 @@ export function SalesForm({ open, onOpenChange, record, onSaved }: {
               ))}
             </div>
           </div>
-          <div><Label>Phone *</Label><Input required value={r.phone} onChange={e => set({ phone: e.target.value })} placeholder="9876543210" className="mt-1.5" /></div>
+          <div><Label>Phone *</Label><Input type="tel" required maxLength={15} value={r.phone} onChange={e => set({ phone: e.target.value })} placeholder="9876543210" className="mt-1.5" /></div>
           <div><Label>Email</Label><Input type="email" value={r.email ?? ""} onChange={e => set({ email: e.target.value })} className="mt-1.5" /></div>
           <div><Label>Website</Label><Input type="url" value={r.website ?? ""} onChange={e => set({ website: e.target.value })} placeholder="https://" className="mt-1.5" /></div>
           <div><Label>Location *</Label><Input required value={r.location} onChange={e => set({ location: e.target.value })} placeholder="City, State" className="mt-1.5" /></div>
