@@ -22,6 +22,9 @@ export type SalesRow = {
   email: string | null;
   website: string | null;
   location: string;
+  latitude: number | null;
+  longitude: number | null;
+  image_url: string | null;
   status: RecordStatus;
   follow_up_date: string | null;
   remarks: string | null;
@@ -30,7 +33,8 @@ export type SalesRow = {
 
 const empty: SalesRow = {
   company_name: "", customer_name: "", categories: [], phone: "", email: "", website: "",
-  location: "", status: "follow_up", follow_up_date: "", remarks: "", conditions: "",
+  location: "", latitude: null, longitude: null, image_url: "",
+  status: "follow_up", follow_up_date: "", remarks: "", conditions: "",
 };
 
 export function SalesForm({ open, onOpenChange, record, onSaved }: {
@@ -69,6 +73,9 @@ export function SalesForm({ open, onOpenChange, record, onSaved }: {
       email: r.email || null,
       website: r.website || null,
       location: r.location.trim(),
+      latitude: r.latitude ?? null,
+      longitude: r.longitude ?? null,
+      image_url: r.image_url || null,
       status: r.status,
       follow_up_date: r.follow_up_date || null,
       remarks: r.remarks || null,
@@ -114,6 +121,38 @@ export function SalesForm({ open, onOpenChange, record, onSaved }: {
           <div><Label>Email</Label><Input type="email" value={r.email ?? ""} onChange={e => set({ email: e.target.value })} className="mt-1.5" /></div>
           <div><Label>Website</Label><Input type="url" value={r.website ?? ""} onChange={e => set({ website: e.target.value })} placeholder="https://" className="mt-1.5" /></div>
           <div><Label>Location *</Label><Input required value={r.location} onChange={e => set({ location: e.target.value })} placeholder="City, State" className="mt-1.5" /></div>
+          <div>
+            <Label>Latitude</Label>
+            <Input
+              type="number"
+              step="any"
+              value={r.latitude ?? ""}
+              onChange={e => set({ latitude: e.target.value === "" ? null : parseFloat(e.target.value) })}
+              placeholder="e.g. 12.9716"
+              className="mt-1.5"
+            />
+          </div>
+          <div>
+            <Label>Longitude</Label>
+            <Input
+              type="number"
+              step="any"
+              value={r.longitude ?? ""}
+              onChange={e => set({ longitude: e.target.value === "" ? null : parseFloat(e.target.value) })}
+              placeholder="e.g. 77.5946"
+              className="mt-1.5"
+            />
+          </div>
+          <div className="col-span-2">
+            <Label>Image URL</Label>
+            <Input
+              type="url"
+              value={r.image_url ?? ""}
+              onChange={e => set({ image_url: e.target.value })}
+              placeholder="https://example.com/image.jpg"
+              className="mt-1.5"
+            />
+          </div>
           <div>
             <Label>Status *</Label>
             <Select value={r.status} onValueChange={(v) => set({ status: v as RecordStatus })}>

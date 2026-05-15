@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { SalesForm, type SalesRow } from "@/components/SalesForm";
 import { FilterBar, applyFilters, emptyFilters, type Filters } from "@/components/FilterBar";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Pencil, Trash2, Download, FileSpreadsheet, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Pencil, Trash2, Download, FileSpreadsheet, ChevronLeft, ChevronRight, MapPin, ImageIcon } from "lucide-react";
 import { format } from "date-fns";
 import { downloadCsv } from "@/lib/csv";
 import { downloadXlsx } from "@/lib/xlsx";
@@ -57,7 +57,10 @@ function SalesPage() {
     Company: r.company_name ?? "", Customer: r.customer_name,
     Categories: (r.categories ?? []).join("; "),
     Phone: r.phone, Email: r.email ?? "", Website: r.website ?? "",
-    Location: r.location, Status: r.status, FollowUp: r.follow_up_date ?? "",
+    Location: r.location,
+    Latitude: r.latitude ?? "", Longitude: r.longitude ?? "",
+    ImageURL: r.image_url ?? "",
+    Status: r.status, FollowUp: r.follow_up_date ?? "",
     Remarks: r.remarks ?? "", Conditions: r.conditions ?? "",
     AddedBy: memberMap[r.created_by] ?? "", AddedOn: r.created_at,
   }));
@@ -100,6 +103,7 @@ function SalesPage() {
                 <TableHead>Categories</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Location</TableHead>
+                <TableHead>Image</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="whitespace-nowrap">Follow-up</TableHead>
                 {isAdmin && <TableHead className="whitespace-nowrap">Added by</TableHead>}
@@ -124,7 +128,39 @@ function SalesPage() {
                     </div>
                   </TableCell>
                   <TableCell>{r.phone}</TableCell>
-                  <TableCell>{r.location}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1.5">
+                      <span>{r.location}</span>
+                      {r.latitude != null && r.longitude != null && (
+                        <a
+                          href={`https://www.google.com/maps?q=${r.latitude},${r.longitude}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={`${r.latitude}, ${r.longitude}`}
+                          className="text-primary hover:text-primary/70"
+                          onClick={e => e.stopPropagation()}
+                        >
+                          <MapPin className="h-3.5 w-3.5" />
+                        </a>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {r.image_url ? (
+                      <a
+                        href={r.image_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                        onClick={e => e.stopPropagation()}
+                      >
+                        <ImageIcon className="h-3.5 w-3.5 shrink-0" />
+                        View
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
                   <TableCell><StatusBadge status={r.status} /></TableCell>
                   <TableCell className="text-sm whitespace-nowrap">{r.follow_up_date ? format(new Date(r.follow_up_date), "d MMM yyyy") : "—"}</TableCell>
                   {isAdmin && <TableCell className="text-sm">{memberMap[r.created_by] ?? "—"}</TableCell>}
@@ -158,7 +194,7 @@ function SalesPage() {
                 </TableRow>
               ))}
               {!filtered.length && (
-                <TableRow><TableCell colSpan={isAdmin ? 11 : 10} className="text-center text-muted-foreground py-12">
+                <TableRow><TableCell colSpan={isAdmin ? 13 : 12} className="text-center text-muted-foreground py-12">
                   No records match. Add your first customer to get started.
                 </TableCell></TableRow>
               )}

@@ -100,7 +100,10 @@ export type Database = {
           email: string | null
           follow_up_date: string | null
           id: string
+          image_url: string | null
+          latitude: number | null
           location: string
+          longitude: number | null
           phone: string
           remarks: string | null
           status: Database["public"]["Enums"]["record_status"]
@@ -117,7 +120,10 @@ export type Database = {
           email?: string | null
           follow_up_date?: string | null
           id?: string
+          image_url?: string | null
+          latitude?: number | null
           location: string
+          longitude?: number | null
           phone: string
           remarks?: string | null
           status?: Database["public"]["Enums"]["record_status"]
@@ -134,7 +140,10 @@ export type Database = {
           email?: string | null
           follow_up_date?: string | null
           id?: string
+          image_url?: string | null
+          latitude?: number | null
           location?: string
+          longitude?: number | null
           phone?: string
           remarks?: string | null
           status?: Database["public"]["Enums"]["record_status"]

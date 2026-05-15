@@ -52,10 +52,13 @@ function Overview() {
 
       <Card className="p-5">
         <h3 className="font-display font-semibold text-lg mb-4">Status breakdown</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <StatusPanel label="Sales" rows={sales} profileMap={isAdmin ? profileMap : null} />
-          <div className="hidden md:block w-px bg-border" />
-          <StatusPanel label="Purchase / Vendors" rows={vendors} profileMap={isAdmin ? profileMap : null} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-0">
+          <div className="pb-6 sm:pb-0 sm:pr-6 border-b sm:border-b-0 sm:border-r border-border">
+            <StatusPanel label="Sales" rows={sales} profileMap={isAdmin ? profileMap : null} />
+          </div>
+          <div className="pt-6 sm:pt-0 sm:pl-6">
+            <StatusPanel label="Purchase / Vendors" rows={vendors} profileMap={isAdmin ? profileMap : null} />
+          </div>
         </div>
       </Card>
 
