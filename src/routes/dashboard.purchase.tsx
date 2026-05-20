@@ -23,7 +23,7 @@ export const Route = createFileRoute("/dashboard/purchase")({ component: Purchas
 const PAGE_SIZE = 10;
 
 function PurchasePage() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, user, fullName } = useAuth();
   const [open, setOpen] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [editing, setEditing] = useState<VendorRow | null>(null);
@@ -44,9 +44,30 @@ function PurchasePage() {
     queryKey: ["members"], enabled: isAdmin,
     queryFn: async () => (await supabase.from("profiles").select("id, full_name")).data ?? [],
   });
-  const memberMap = Object.fromEntries((members ?? []).map(m => [m.id, m.full_name]));
+  const memberMap: Record<string, string> = Object.fromEntries((members ?? []).map(m => [m.id, m.full_name ?? ""]));
+  // Non-admins don't load the members list, but they can still type their
+  // own name expecting to see their records — patch it in.
+  if (user?.id && fullName && !memberMap[user.id]) memberMap[user.id] = fullName;
 
-  const filtered = applyFilters(data ?? [], filters, (r: any) => `${r.vendor_name} ${r.phone} ${r.location} ${(r.product_categories ?? []).join(" ")}`);
+  const filtered = applyFilters(
+    data ?? [],
+    filters,
+    (r: any) =>
+      [
+        r.vendor_name,
+        r.company_name,
+        r.vendor_code,
+        r.phone,
+        r.email,
+        r.website,
+        r.location,
+        r.price_range,
+        (r.product_categories ?? []).join(" "),
+        memberMap[r.created_by],
+      ]
+        .filter(Boolean)
+        .join(" "),
+  );
 
   useEffect(() => { setPage(0); }, [filters]);
 

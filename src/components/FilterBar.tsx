@@ -26,7 +26,7 @@ export function FilterBar({
     <div className="flex flex-wrap items-end gap-2">
       <div className="relative flex-1 min-w-[200px]">
         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input value={filters.q} onChange={(e) => set({ q: e.target.value })} placeholder="Search by name, phone, location…" className="pl-9" />
+        <Input value={filters.q} onChange={(e) => set({ q: e.target.value })} placeholder="Search by name, company, phone, location, added-by…" className="pl-9" />
       </div>
       <div className="w-36">
         <Select value={filters.status} onValueChange={(v) => set({ status: v as any })}>
@@ -64,6 +64,12 @@ export function FilterBar({
 }
 
 export function applyFilters<T extends { status: string; created_at: string; created_by: string }>(rows: T[], f: Filters, searchFields: (r: T) => string) {
+  const rawNeedle = f.q.trim().toLowerCase();
+  // Phone-friendly needle: when the search is dominated by digits, also
+  // match against a digits-only projection of the haystack so users can
+  // type "+91 98 76" or "98-76" and still hit "9876543210".
+  const digitsNeedle = rawNeedle.replace(/\D/g, "");
+  const useDigitsMatch = digitsNeedle.length >= 3;
   return rows.filter(r => {
     if (f.status !== "all" && r.status !== f.status) return false;
     if (f.member !== "all" && r.created_by !== f.member) return false;
@@ -72,7 +78,10 @@ export function applyFilters<T extends { status: string; created_at: string; cre
       const end = new Date(f.to); end.setHours(23, 59, 59, 999);
       if (new Date(r.created_at) > end) return false;
     }
-    if (f.q && !searchFields(r).toLowerCase().includes(f.q.toLowerCase())) return false;
-    return true;
+    if (!rawNeedle) return true;
+    const haystack = searchFields(r).toLowerCase();
+    if (haystack.includes(rawNeedle)) return true;
+    if (useDigitsMatch && haystack.replace(/\D/g, "").includes(digitsNeedle)) return true;
+    return false;
   });
 }

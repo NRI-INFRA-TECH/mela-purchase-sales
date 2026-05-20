@@ -22,7 +22,7 @@ export const Route = createFileRoute("/dashboard/sales")({ component: SalesPage 
 const PAGE_SIZE = 10;
 
 function SalesPage() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, user, fullName } = useAuth();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<SalesRow | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -44,9 +44,30 @@ function SalesPage() {
     queryFn: async () => (await supabase.from("profiles").select("id, full_name")).data ?? [],
   });
 
-  const memberMap = Object.fromEntries((members ?? []).map(m => [m.id, m.full_name]));
+  const memberMap: Record<string, string> = Object.fromEntries((members ?? []).map(m => [m.id, m.full_name ?? ""]));
+  // Non-admins don't load the members list, but they can still type their
+  // own name expecting to see their records — patch it in.
+  if (user?.id && fullName && !memberMap[user.id]) memberMap[user.id] = fullName;
 
-  const filtered = applyFilters(data ?? [], filters, (r: any) => `${r.customer_name} ${r.phone} ${r.location} ${r.email ?? ""}`);
+  const filtered = applyFilters(
+    data ?? [],
+    filters,
+    (r: any) =>
+      [
+        r.customer_name,
+        r.company_name,
+        r.phone,
+        r.email,
+        r.website,
+        r.location,
+        r.remarks,
+        r.conditions,
+        (r.categories ?? []).join(" "),
+        memberMap[r.created_by],
+      ]
+        .filter(Boolean)
+        .join(" "),
+  );
 
   useEffect(() => { setPage(0); }, [filters]);
 
